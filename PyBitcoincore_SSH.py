@@ -6,7 +6,7 @@ import pprint
 ssh_host = '192.168.0.19'
 ssh_port = 22
 ssh_user = 'admin'
-ssh_password = 'Scutti97'
+ssh_password = 'raspiblitz'
 
 # CONNECT
 ssh = paramiko.SSHClient()
@@ -20,19 +20,26 @@ def getblockhash(block_height):
     output = stdout.read().decode('utf-8')
     print(output)  
 
-# GetBlock           WORK IN PROGRESS
+# GetBlock
 def getblock(block_hash, verbosity):
     command = f'bitcoin-cli getblock "{block_hash}" {verbosity}'
     stdin, stdout, stderr = ssh.exec_command(command)
     output = stdout.read().decode('utf-8')
-    if verbosity == 0:                              # Custom desirialization from hex / json to human-readable text
-        print(output)
-    elif verbosity == 1 or verbosity == 2:
-        output_deserial = '{\n' + ',\n'.join(f'  {key}: {value}' for key, value in json.loads(output).items()) + '\n}'
-        pprint.pprint(output_deserial)  
-
-
-
+    load = json.loads(output)
+    if verbosity == 0:              #                                     Desirialization from hex / json to human-readable text 
+        print(output)               #                                     customized on verbosity parameter (improvable)
+    elif verbosity == 1:
+        for key in load:
+            if key != 'tx':
+                print(key + ': ' + str(load[key]))
+            else:  
+                print(key + ':\n  ' + str(load[key]).replace(',','\n ').replace('[','').replace(']',''))
+    elif verbosity == 2:
+        for key in load:
+            if key != 'tx':
+                print(key + ': ' + str(load[key]))
+            else:  
+                pprint.pprint(load[key])
 
 getblockhash(123220)
 getblock('0000000000000f669dfab4b2308cb3be0bb14a3b463e06ff6608335411ad4eac',1)
