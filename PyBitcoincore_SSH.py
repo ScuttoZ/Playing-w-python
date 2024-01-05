@@ -33,15 +33,15 @@ def getblockhash(block_height):
     return(output) 
 
 # GetBlock                                                              # If verbosity is 0, returns a string (str) that is serialized, hex-encoded data for block ‘block_hash’.
-def getblock(block_hash, verbosity):                                    # If verbosity is 1, returns an object (dict) with information about block ‘block_hash’.
+def getblock(block_hash, verbosity=1):                                # If verbosity is 1, returns an object (dict) with information about block ‘block_hash’.
     command = f'bitcoin-cli getblock "{block_hash}" {verbosity}'        # If verbosity is 2, returns an object (dict) with information about block ‘block_hash’
     stdin, stdout, stderr = ssh.exec_command(command)                   #  and information about each transaction.
-    output = stdout.read().decode('utf-8')
-    load = json.loads(output)
+    output = stdout.read().decode('utf-8')    
     if verbosity == 0:                                                      # Translation from hex / json to human-readable text customized on the verbosity parameter
-        print(output)                                                       # (totally optional, to remove the "print"s comment out line 42 and lines 44 to 55)
-        return(output)                                                  
-    elif verbosity == 1:
+        print(output)                                                       # (totally optional, to remove the "print"s comment out line 41 and lines 44 to 55)
+        return(output)
+    load = json.loads(output)                                                  
+    if verbosity == 1:
         for key in load:
             if key != 'tx':
                 print(key + ': ' + str(load[key]))
@@ -74,11 +74,15 @@ def getblockcount():
     return(output)
 
 # GetBlockFilter                                                             # Retrieve a BIP 157 content filter for a particular block.
-#def getblockfilter():
+#def getblockfilter(block_hash, filter_type='basic'):
+#    command = f'bitcoin-cli getblockfilter {block_hash} {filter_type}'       
+
+
+
 
 
 #getblockhash(0)
-#getblock('0000000000000f669dfab4b2308cb3be0bb14a3b463e06ff6608335411ad4eac',1)
+getblockfilter('00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09')
 #getblockchaininfo()
 
 ssh.close()
