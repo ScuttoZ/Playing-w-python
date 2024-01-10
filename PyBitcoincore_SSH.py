@@ -32,7 +32,7 @@ def getbestblockhash():
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:                                             # [NOTE] : Error handling is only done on the machine we are connected to via ssh by checking the command's exit status
         output = stdout.read().decode('utf-8')
-        return(output.rstrip('\n'))
+        return output.rstrip('\n')
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -46,7 +46,7 @@ def getblock(block_hash:str, verbosity:int=1):                                  
         output = stdout.read().decode('utf-8')    
         if verbosity == 0:                                                                           # Translation from hex / json to human-readable text customized on the verbosity parameter
 #            print(output)                                                                           #   (totally optional, to remove the "print"s comment out line 48 and lines 51 to 62)
-            return(output.rstrip('\n'))
+            return output.rstrip('\n')
         load = json.loads(output)                                                  
 #        if verbosity == 1:
 #            for key in load:
@@ -60,7 +60,7 @@ def getblock(block_hash:str, verbosity:int=1):                                  
 #                    print(key + ': ' + str(load[key]))
 #                else:  
 #                    pprint.pprint(load[key])
-        return(load)
+        return load
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -76,7 +76,7 @@ def getblockchaininfo():
 #        for key in load:
 #                if key != 'tx':                                                                   # Translation to human-readable text (optional, lines 76 to 78)
 #                    print(key + ': ' + str(load[key]))
-        return(load)
+        return load
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -88,7 +88,7 @@ def getblockcount():
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
         output = stdout.read().decode('utf-8')
-        return(output)
+        return output
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -103,7 +103,7 @@ def getblockfilter(block_hash:str, filter_type:str='basic'):                    
         load = json.loads(output)
 #        for key in load:                                                                         # Translation to human-readable text (optional, lines 104-105)
 #            print(key + ': ' + str(load[key])) 
-        return(load)
+        return load
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -115,7 +115,7 @@ def getblockhash(block_height:int):
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
         output = stdout.read().decode('utf-8')
-        return(output.rstrip('\n')) 
+        return output.rstrip('\n')
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -129,7 +129,7 @@ def getblockheader(block_hash:str, verbose:str='true'):                         
         output = stdout.read().decode('utf-8')                                        # [NOTE] : verbose must NOT be boolean, but a lowercase string.
         if verbose.lower() == 'false':
 #            print(output)                                                                                   # Translation from hex / json to human-readable text customized on the verbosity parameter
-            return(output.rstrip('\n'))                                                                     #   (optional, lines 131 and 134 to 139)
+            return output.rstrip('\n')                                                                       #   (optional, lines 131 and 134 to 139)
         load = json.loads(output)
 #        if verbose.lower() == 'true':
 #            for key in load:
@@ -137,7 +137,7 @@ def getblockheader(block_hash:str, verbose:str='true'):                         
 #                    print(key + ': ' + str(load[key]))
 #                else:  
 #                    print(key + ':\n  ' + str(load[key]).replace(',','\n '))
-        return(load)
+        return load
     else: 
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
@@ -149,13 +149,43 @@ def getblockstats(block_hash_or_height, stats:str=''):                          
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
         output = stdout.read().decode('utf-8')
-        return(output)
+        return output
     else:
         err = stdout.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
+#GetChainTips
+def getchaintips():                                                                                      # Return information (list) about all known tips in the block tree, including the main chain as well as orphaned branches.
+    command = f'bitcoin-cli getchaintips'
+    stdin, stdout, stderr = ssh.exec_command(command)  
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')
+        load = json.loads(output)
+#        print(output.replace('[','').replace(']','').replace('{','').replace('}','').replace('"',''))        # Optional translation to human-readable text (line 165)
+        return load
+    else:
+        err = stdout.read().decode('utf-8')
+        return(f'Exit status: {exit_status}\n{err}')
+    
+#GetChainTxStats
+def getchaintxstats(nblocks:int='' , block_hash:str=''):                                                 # Compute statistics (dict) about the total number and rate of transactions in the chain.
+    command = f'bitcoin-cli getchaintxstats {nblocks} {block_hash}'
+    stdin, stdout, stderr = ssh.exec_command(command)  
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')
+        load = json.loads(output)
+#        for key in load:                                                                                    # Optional translator to human-readable text (lines 179-180)
+#           print(key + ': ' + str(load[key])) 
+        return load
+    else:
+        err = stdout.read().decode('utf-8')
+        return(f'Exit status: {exit_status}\n{err}')
 
-print(getblockstats('00000000000000001a2a29708d38505ec20d8f51b4ca28f6b526d1d22073c7e0','["avgfee","minfeerate"]'))
+#print(getblockstats('00000000000000001a2a29708d38505ec20d8f51b4ca28f6b526d1d22073c7e0','[''avgfee'']'))
 #getblockstats(getblockhash(1233))
+print(getchaintips())
+
 
 ssh.close()
