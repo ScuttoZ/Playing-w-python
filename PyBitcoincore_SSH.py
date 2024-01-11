@@ -34,7 +34,7 @@ def getbestblockhash():
         output = stdout.read().decode('utf-8')
         return output.rstrip('\n')
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
 # GetBlock                                                                                   # If verbosity is 0, returns a string (str) that is serialized, hex-encoded data for block ‘block_hash’.
@@ -62,7 +62,7 @@ def getblock(block_hash:str, verbosity:int=1):                                  
 #                    pprint.pprint(load[key])
         return load
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
 # GetBlockchainInfo                                                                         # Returns an object (dict) containing various state info regarding blockchain processing.
@@ -78,7 +78,7 @@ def getblockchaininfo():
 #                    print(key + ': ' + str(load[key]))
         return load
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
            
 # GetBlockCount                                                                             # Returns the height (int) of the most-work fully-validated chain.
@@ -90,7 +90,7 @@ def getblockcount():
         output = stdout.read().decode('utf-8')
         return output
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
     
 # GetBlockFilter                                                                            # Retrieve a BIP 157 content filter (dict) for a particular block. 
@@ -105,7 +105,7 @@ def getblockfilter(block_hash:str, filter_type:str='basic'):                    
 #            print(key + ': ' + str(load[key])) 
         return load
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
     
 # GetBlockHash                                                                               # Returns hash (str) of block in best-block-chain at height provided.
@@ -117,7 +117,7 @@ def getblockhash(block_height:int):
         output = stdout.read().decode('utf-8')
         return output.rstrip('\n')
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
 #GetBlockHeader
@@ -139,7 +139,7 @@ def getblockheader(block_hash:str, verbose:str='true'):                         
 #                    print(key + ':\n  ' + str(load[key]).replace(',','\n '))
         return load
     else: 
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
 #GetBlockStats
@@ -151,7 +151,7 @@ def getblockstats(block_hash_or_height, stats:str=''):                          
         output = stdout.read().decode('utf-8')
         return output
     else:
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}') 
 
 #GetChainTips
@@ -165,7 +165,7 @@ def getchaintips():                                                             
 #        print(output.replace('[','').replace(']','').replace('{','').replace('}','').replace('"',''))        # Optional translation to human-readable text (line 165)
         return load
     else:
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}')
     
 #GetChainTxStats
@@ -180,12 +180,62 @@ def getchaintxstats(nblocks:int='' , block_hash:str=''):                        
 #           print(key + ': ' + str(load[key])) 
         return load
     else:
-        err = stdout.read().decode('utf-8')
+        err = stderr.read().decode('utf-8')
         return(f'Exit status: {exit_status}\n{err}')
+
+#GetDifficulty
+def getdifficulty():                                                                                       # Returns the proof-of-work difficulty (float) as a multiple of the minimum difficulty.
+    command = f'bitcoin-cli getdifficulty'
+    stdin, stdout, stderr = ssh.exec_command(command)  
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')
+        return float(output)
+    else:
+        err = stderr.read().decode('utf-8')
+        return(f'Exit status: {exit_status}\n{err}')
+
+#GetMempoolAncestors
+def getmempoolancestors(txid:str, verbose:str='true'):
+    #command = f'bitcoin-cli getmempoolancestors {txid} {verbose.lower()}'
+    command = f'bitcoin-cli getrawmempool'                           # If verbose is true, returns an Object (dict) with information about blockheader ‘hash’.
+    stdin, stdout, stderr = ssh.exec_command(command)                                                 # If verbose is false, returns an array (list) of transaction ids.
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')  
+        print(output)
+    else:
+        err = stderr.read().decode('utf-8')
+        print(f'Exit status: {exit_status}\n{err}')
+
+#GetMempoolInfo
+def getmempoolinfo():                                                                   # [WORK IN PROGRESS]
+    command = f'bitcoin-cli getmempoolinfo'
+    stdin, stdout, stderr = ssh.exec_command(command)
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')  
+        print(output)
+    else:
+        err = stderr.read().decode('utf-8')
+        print(f'Exit status: {exit_status}\n{err}')
+
+#GetRawMempool
+def getrawmempool():                                                                    # [WORK IN PROGRESS]
+    command = f'bitcoin-cli getrawmempool'
+    stdin, stdout, stderr = ssh.exec_command(command)
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        output = stdout.read().decode('utf-8')  
+        print(output)
+    else:
+        err = stderr.read().decode('utf-8')
+        print(f'Exit status: {exit_status}\n{err}')
 
 #print(getblockstats('00000000000000001a2a29708d38505ec20d8f51b4ca28f6b526d1d22073c7e0','[''avgfee'']'))
 #getblockstats(getblockhash(1233))
-print(getchaintips())
+#getmempoolancestors('6a122b1020f612faa2c7a82115ca45a9def043949973649d6b5fb83860eff32e','False')
+getrawmempool()
+getmempoolinfo()
 
-
-ssh.close()
+ssh.exec_command('exit')
