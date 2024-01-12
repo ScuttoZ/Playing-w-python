@@ -197,32 +197,37 @@ def getdifficulty():                                                            
 
 #GetMempoolAncestors
 def getmempoolancestors(txid:str, verbose:str='true'):
-    #command = f'bitcoin-cli getmempoolancestors {txid} {verbose.lower()}'
-    command = f'bitcoin-cli getrawmempool'                           # If verbose is true, returns an Object (dict) with information about blockheader ‘hash’.
+    command = f'bitcoin-cli getmempoolancestors {txid} {verbose.lower()}'                             # If verbose is true, returns an Object (dict) with information about blockheader ‘hash’.
     stdin, stdout, stderr = ssh.exec_command(command)                                                 # If verbose is false, returns an array (list) of transaction ids.
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
         output = stdout.read().decode('utf-8')  
-        print(output)
+        if verbose.lower() == 'false':
+            return output.rstrip('\n')                                                                      
+        load = json.loads(output)
+        return load
     else:
         err = stderr.read().decode('utf-8')
         print(f'Exit status: {exit_status}\n{err}')
 
 #GetMempoolInfo
-def getmempoolinfo():                                                                   # [WORK IN PROGRESS]
+def getmempoolinfo():                                                                   # Returns details (dict) on the active state of the TX memory pool.
     command = f'bitcoin-cli getmempoolinfo'
     stdin, stdout, stderr = ssh.exec_command(command)
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
-        output = stdout.read().decode('utf-8')  
-        print(output)
+        output = stdout.read().decode('utf-8')
+        load = json.loads(output)
+        for key in load:                                                                                    # Optional translator to human-readable text (lines 221-222)
+           print(key + ': ' + str(load[key])) 
+        return(load)
     else:
         err = stderr.read().decode('utf-8')
         print(f'Exit status: {exit_status}\n{err}')
 
-#GetRawMempool
-def getrawmempool():                                                                    # [WORK IN PROGRESS]
-    command = f'bitcoin-cli getrawmempool'
+#GetRawMempool                                                                                             [WORK IN PROGRESS]
+def getrawmempool(verbose:str='false',mempool_sequence:str='false'):                                       # Returns all transaction ids in memory pool as a json array of string transaction ids.
+    command = f'bitcoin-cli getrawmempool {verbose.lower()} {mempool_sequence.lower()}'                    # 
     stdin, stdout, stderr = ssh.exec_command(command)
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
@@ -232,10 +237,7 @@ def getrawmempool():                                                            
         err = stderr.read().decode('utf-8')
         print(f'Exit status: {exit_status}\n{err}')
 
-#print(getblockstats('00000000000000001a2a29708d38505ec20d8f51b4ca28f6b526d1d22073c7e0','[''avgfee'']'))
-#getblockstats(getblockhash(1233))
-#getmempoolancestors('6a122b1020f612faa2c7a82115ca45a9def043949973649d6b5fb83860eff32e','False')
-getrawmempool()
-getmempoolinfo()
+
+#getrawmempool()
 
 ssh.exec_command('exit')
