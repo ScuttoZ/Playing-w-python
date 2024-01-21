@@ -35,7 +35,7 @@ while running:
                 action = ''
     
     # Read
-    if action.upper() == 'S':
+    if action.upper() == 'R':
         selection = input('Which list do I open?\n')           # User must know which lists exist. Add list of lists to display when 
         try:
             with open(f'{selection}.txt') as lst:
