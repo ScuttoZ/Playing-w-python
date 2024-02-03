@@ -14,6 +14,10 @@ running = True
 
 # Loops this while running.
 def Create():
+''' Creates a list names after user's input after checking for illegal characters and for used names.
+    If the name is already used, the user is prompted with two options: chosing an alternative name
+    or editing the already existing list. '''
+
     newList = input('How shall the new list be called?\n')
     if any(char in newList for char in illegalChars):
         print('An illegal character was used. I''m calling the police.')
@@ -51,6 +55,7 @@ def Create():
             Close()
 
 def Read(selection):
+''' Prints the selected text file in the command line. '''
     selection = input('Which list do I open?\n') if selection == None else selection          # User must know which lists exist. Add list of lists to display when 
     try:
         with open(f'{selection}.txt') as lst:
@@ -65,6 +70,7 @@ def Read(selection):
         Close()
 
 def Edit(selection = None):
+''' Opens an existing list with a text editor app of the underlying OS. '''
     selection =  input('Which list ae we editing?\n') if selection == None else selection
     try:
         if platform.system() == "Windows":
@@ -80,6 +86,7 @@ def Edit(selection = None):
         Close()
 
 def Close():
+''' Shuts down the main loop (which is "while running") by flagging "running" variable to False. '''
     global running 
     running = False if input('Are you done?\nY / N\n').upper() == 'Y' else print('Alright, back to the menu:\n')   
     
