@@ -12,7 +12,6 @@
 
 import paramiko
 import json
-import pprint
 
 # SSH CONNECTION SETTING
 ssh_host = '192.168.0.19'
@@ -25,45 +24,36 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(ssh_host, ssh_port, ssh_user, ssh_password)
 
-# GetBestBlockHash                                                                           # Returns the hash (str) of the best (tip) block in the most-work fully-validated chain.
-def getbestblockhash():
-    command = f'bitcoin-cli getbestblockhash'
-    stdin, stdout, stderr = ssh.exec_command(command)
-    exit_status = stdout.channel.recv_exit_status()
-    if exit_status == 0:                                             # [NOTE] : Error handling is only done on the machine we are connected to via ssh by checking the command's exit status
-        output = stdout.read().decode('utf-8')
-        return output.rstrip('\n')
-    else: 
-        err = stderr.read().decode('utf-8')
-        return(f'Exit status: {exit_status}\n{err}') 
-
-# GetBlock                                                                                   # If verbosity is 0, returns a string (str) that is serialized, hex-encoded data for block ‘block_hash’.
-def getblock(block_hash:str, verbosity:int=1):                                                       # If verbosity is 1, returns an object (dict) with information about block ‘block_hash’.
-    command = f'bitcoin-cli getblock {block_hash} {verbosity}'                               # If verbosity is 2, returns an object (dict) with information about block ‘block_hash’
+def run_command(command:str)->str:
     stdin, stdout, stderr = ssh.exec_command(command)                                        #  and information about each transaction.
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
-        output = stdout.read().decode('utf-8')    
-        if verbosity == 0:                                                                           # Translation from hex / json to human-readable text customized on the verbosity parameter
-#            print(output)                                                                           #   (totally optional, to remove the "print"s comment out line 48 and lines 51 to 62)
-            return output.rstrip('\n')
-        load = json.loads(output)                                                  
-#        if verbosity == 1:
-#            for key in load:
-#                if key != 'tx':
-#                    print(key + ': ' + str(load[key]))
-#                else:  
-#                    print(key + ':\n  ' + str(load[key]).replace(',','\n ').replace('[','').replace(']',''))
-#        elif verbosity == 2:
-#            for key in load:
-#                if key != 'tx':
-#                    print(key + ': ' + str(load[key]))
-#                else:  
-#                    pprint.pprint(load[key])
-        return load
-    else: 
+        return stdout.read().decode('utf-8')
+    else:
         err = stderr.read().decode('utf-8')
-        return(f'Exit status: {exit_status}\n{err}') 
+        return(f'Exit status: {exit_status}\n{err}')
+
+# GetBestBlockHash                                                                           # Returns the hash (str) of the best (tip) block in the most-work fully-validated chain.
+#def getbestblockhash():
+#    command = f'bitcoin-cli getbestblockhash'
+#    stdin, stdout, stderr = ssh.exec_command(command)
+#    exit_status = stdout.channel.recv_exit_status()
+#    if exit_status == 0:                                             # [NOTE] : Error handling is only done on the machine we are connected to via ssh by checking the command's exit status
+#        output = stdout.read().decode('utf-8')
+#        return output.rstrip('\n')
+#    else: 
+#        err = stderr.read().decode('utf-8')
+#        return(f'Exit status: {exit_status}\n{err}') 
+#
+# GetBlock                                                                                   # If verbosity is 0, returns a string (str) that is serialized, hex-encoded data for block ‘block_hash’.
+def getblock(block_hash:str, verbosity:int=1):                                                       # If verbosity is 1, returns an object (dict) with information about block ‘block_hash’.
+    command = f'bitcoin-cli getblock {block_hash} {verbosity}'                               # If verbosity is 2, returns an object (dict) with information about block ‘block_hash’    
+    if verbosity == 0:                                                                           # Translation from hex / json to human-readable text customized on the verbosity parameter
+        return run_command(command).rstrip('\n')
+    elif verbosity == 1: 
+        load = json.loads(output)                                                  
+        return load
+    
 
 # GetBlockchainInfo                                                                         # Returns an object (dict) containing various state info regarding blockchain processing.
 def getblockchaininfo():
@@ -218,8 +208,8 @@ def getmempoolinfo():                                                           
     if exit_status == 0:
         output = stdout.read().decode('utf-8')
         load = json.loads(output)
-        for key in load:                                                                                    # Optional translator to human-readable text (lines 221-222)
-           print(key + ': ' + str(load[key])) 
+#        for key in load:                                                                                    # Optional translator to human-readable text (lines 221-222)
+#           print(key + ': ' + str(load[key])) 
         return(load)
     else:
         err = stderr.read().decode('utf-8')
@@ -238,6 +228,11 @@ def getrawmempool(verbose:str='false',mempool_sequence:str='false'):            
         print(f'Exit status: {exit_status}\n{err}')
 
 
-#getrawmempool()
+@command
+def getbestblockhash():
+    ''' GetBestBlockHash wrapped '''                                                                          # Returns the hash (str) of the best (tip) block in the most-work fully-validated chain.
+
+
+#print(getbestblockhash())
 
 ssh.exec_command('exit')
